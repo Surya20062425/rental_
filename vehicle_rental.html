@@ -1,0 +1,1894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IronHaul Equipment Rentals</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ─────────────────────────────────────────────
+       DESIGN TOKENS
+    ───────────────────────────────────────────── */
+    :root {
+      --bg:        #13151A;
+      --surface:   #1E2128;
+      --surface2:  #272B34;
+      --border:    #363B47;
+      --orange:    #F97316;
+      --orange-dk: #C25B0C;
+      --amber:     #FBBF24;
+      --text:      #F1F5F9;
+      --text-muted:#94A3B8;
+      --text-dim:  #64748B;
+      --success:   #22C55E;
+      --error:     #EF4444;
+      --radius:    10px;
+      --radius-lg: 16px;
+      --shadow:    0 4px 24px rgba(0,0,0,.45);
+      --shadow-lg: 0 8px 48px rgba(0,0,0,.6);
+      --font-display: 'Space Grotesk', sans-serif;
+      --font-body:    'Inter', sans-serif;
+      --transition: .22s cubic-bezier(.4,0,.2,1);
+    }
+
+    /* ─────────────────────────────────────────────
+       RESET & BASE
+    ───────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    img { display: block; max-width: 100%; }
+    a { color: inherit; text-decoration: none; }
+    button { cursor: pointer; font-family: var(--font-body); border: none; outline: none; }
+    input, select, textarea { font-family: var(--font-body); }
+
+    /* ─────────────────────────────────────────────
+       SCROLLBAR
+    ───────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    /* ─────────────────────────────────────────────
+       NAVIGATION
+    ───────────────────────────────────────────── */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 5%;
+      height: 68px;
+      background: rgba(19,21,26,.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-family: var(--font-display);
+      font-size: 1.35rem; font-weight: 700;
+      letter-spacing: -.02em;
+    }
+    .nav-logo svg { color: var(--orange); }
+    .nav-logo span { color: var(--orange); }
+
+    .nav-links { display: flex; gap: 6px; }
+    .nav-link {
+      padding: 8px 16px; border-radius: 8px;
+      font-size: .9rem; font-weight: 500; color: var(--text-muted);
+      transition: color var(--transition), background var(--transition);
+      background: none;
+    }
+    .nav-link:hover, .nav-link.active {
+      color: var(--text); background: var(--surface);
+    }
+    .nav-link.active { color: var(--orange); }
+
+    .nav-cta {
+      padding: 9px 20px; border-radius: 8px;
+      background: var(--orange); color: #fff;
+      font-size: .9rem; font-weight: 600;
+      transition: background var(--transition), transform var(--transition);
+    }
+    .nav-cta:hover { background: var(--orange-dk); transform: translateY(-1px); }
+
+    .hamburger {
+      display: none; background: none;
+      flex-direction: column; gap: 5px; padding: 6px;
+    }
+    .hamburger span {
+      display: block; width: 24px; height: 2px;
+      background: var(--text); border-radius: 2px;
+      transition: transform var(--transition), opacity var(--transition);
+    }
+    .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    .mobile-menu {
+      display: none; position: fixed; top: 68px; left: 0; right: 0;
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 16px 5%; z-index: 99; flex-direction: column; gap: 4px;
+    }
+    .mobile-menu.open { display: flex; }
+    .mobile-menu .nav-link { font-size: 1rem; padding: 12px 16px; }
+
+    /* ─────────────────────────────────────────────
+       PAGE SYSTEM
+    ───────────────────────────────────────────── */
+    .page { display: none; padding-top: 68px; }
+    .page.active { display: block; }
+
+    /* ─────────────────────────────────────────────
+       SECTION TAPE DIVIDER (signature element)
+       Mimics construction measurement tape
+    ───────────────────────────────────────────── */
+    .tape-divider {
+      width: 100%; height: 28px; overflow: hidden;
+      position: relative; margin: 60px 0;
+    }
+    .tape-divider::before {
+      content: '';
+      display: block; width: 100%; height: 100%;
+      background:
+        repeating-linear-gradient(
+          90deg,
+          transparent 0px, transparent 19px,
+          var(--orange) 19px, var(--orange) 20px
+        ),
+        repeating-linear-gradient(
+          90deg,
+          transparent 0px, transparent 9px,
+          var(--border) 9px, var(--border) 10px
+        );
+    }
+    .tape-divider-label {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      font-family: var(--font-display); font-size: .72rem;
+      font-weight: 700; letter-spacing: .2em; text-transform: uppercase;
+      color: var(--orange);
+      background: var(--bg);
+      padding: 4px 20px;
+    }
+
+    /* ─────────────────────────────────────────────
+       BUTTONS
+    ───────────────────────────────────────────── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 13px 26px; border-radius: var(--radius);
+      font-weight: 600; font-size: .95rem;
+      transition: all var(--transition);
+    }
+    .btn-primary {
+      background: var(--orange); color: #fff;
+    }
+    .btn-primary:hover {
+      background: var(--orange-dk); transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(249,115,22,.35);
+    }
+    .btn-outline {
+      background: transparent; color: var(--text);
+      border: 1.5px solid var(--border);
+    }
+    .btn-outline:hover {
+      border-color: var(--orange); color: var(--orange);
+      transform: translateY(-2px);
+    }
+    .btn-ghost {
+      background: var(--surface); color: var(--text);
+    }
+    .btn-ghost:hover { background: var(--surface2); }
+    .btn-sm { padding: 9px 18px; font-size: .85rem; }
+
+    /* ─────────────────────────────────────────────
+       BADGES
+    ───────────────────────────────────────────── */
+    .badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 6px; font-size: .75rem; font-weight: 600;
+    }
+    .badge-orange { background: rgba(249,115,22,.15); color: var(--orange); }
+    .badge-green  { background: rgba(34,197,94,.15);  color: var(--success); }
+    .badge-amber  { background: rgba(251,191,36,.12); color: var(--amber); }
+    .badge-dim    { background: var(--surface2); color: var(--text-muted); }
+
+    /* ─────────────────────────────────────────────
+       ═══════════════════════════════════════════
+       HOME PAGE
+       ═══════════════════════════════════════════
+    ───────────────────────────────────────────── */
+    .hero {
+      min-height: calc(100vh - 68px);
+      display: flex; align-items: center;
+      padding: 80px 5%;
+      position: relative; overflow: hidden;
+    }
+    .hero-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 60px; align-items: center; width: 100%; max-width: 1240px; margin: 0 auto;
+    }
+
+    /* Blueprint grid background */
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(249,115,22,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(249,115,22,.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+    }
+    .hero::after {
+      content: '';
+      position: absolute; top: -200px; right: -200px;
+      width: 600px; height: 600px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(249,115,22,.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-eyebrow {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 20px;
+    }
+    .hero-eyebrow-line {
+      width: 40px; height: 2px; background: var(--orange);
+    }
+    .hero-eyebrow span {
+      font-family: var(--font-display); font-size: .8rem;
+      font-weight: 600; letter-spacing: .18em; text-transform: uppercase;
+      color: var(--orange);
+    }
+
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.4rem, 5vw, 3.6rem);
+      font-weight: 700; line-height: 1.1;
+      letter-spacing: -.03em; margin-bottom: 20px;
+    }
+    .hero h1 em {
+      font-style: normal; color: var(--orange);
+      position: relative;
+    }
+
+    .hero-sub {
+      font-size: 1.05rem; color: var(--text-muted);
+      max-width: 460px; margin-bottom: 36px; line-height: 1.7;
+    }
+    .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 52px; }
+
+    .hero-stats { display: flex; gap: 32px; }
+    .hero-stat-num {
+      font-family: var(--font-display); font-size: 1.9rem; font-weight: 700;
+      color: var(--text); line-height: 1;
+    }
+    .hero-stat-num span { color: var(--orange); }
+    .hero-stat-label { font-size: .78rem; color: var(--text-muted); margin-top: 4px; letter-spacing: .04em; text-transform: uppercase; }
+
+    /* Hero visual: stacked equipment cards */
+    .hero-visual { position: relative; z-index: 1; }
+    .hero-card-stack { position: relative; height: 420px; }
+    .hero-card {
+      position: absolute;
+      background: var(--surface); border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .hero-card-main {
+      width: 100%; right: 0; top: 0; bottom: 0;
+      box-shadow: var(--shadow-lg);
+    }
+    .hero-card-thumb {
+      width: 64%; left: -16px; bottom: -20px;
+      box-shadow: var(--shadow);
+      border: 2px solid var(--orange);
+    }
+
+    .vehicle-img-placeholder {
+      width: 100%; height: 220px;
+      background: linear-gradient(135deg, var(--surface2) 0%, var(--bg) 100%);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 10px; color: var(--text-dim);
+    }
+    .vehicle-img-placeholder svg { opacity: .4; }
+    .vehicle-img-placeholder span { font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; }
+
+    .hero-card-info { padding: 18px 20px; }
+    .hero-card-info h3 { font-family: var(--font-display); font-size: 1.05rem; font-weight: 600; }
+    .hero-card-info p { font-size: .82rem; color: var(--text-muted); margin-top: 4px; }
+
+    .availability-chip {
+      display: flex; align-items: center; gap: 6px;
+      position: absolute; top: 14px; right: 14px;
+      background: rgba(34,197,94,.18); color: var(--success);
+      padding: 5px 12px; border-radius: 20px; font-size: .76rem; font-weight: 600;
+    }
+    .availability-chip::before {
+      content: '';
+      width: 7px; height: 7px; border-radius: 50%; background: var(--success);
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: .5; transform: scale(.8); }
+    }
+
+    /* ── HOW IT WORKS ── */
+    .how-section { padding: 0 5% 100px; }
+    .section-header { text-align: center; max-width: 600px; margin: 0 auto 56px; }
+    .section-eyebrow {
+      font-family: var(--font-display); font-size: .78rem;
+      font-weight: 700; letter-spacing: .18em; text-transform: uppercase;
+      color: var(--orange); margin-bottom: 12px;
+    }
+    .section-header h2 {
+      font-family: var(--font-display); font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 700; letter-spacing: -.025em; line-height: 1.18;
+    }
+    .section-header p { color: var(--text-muted); margin-top: 12px; font-size: 1rem; }
+
+    .steps-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 24px; max-width: 1060px; margin: 0 auto;
+      position: relative;
+    }
+    .steps-grid::before {
+      content: '';
+      position: absolute; top: 44px; left: calc(33.33% - 12px); right: calc(33.33% - 12px);
+      height: 1px;
+      background: linear-gradient(90deg, var(--border), var(--orange), var(--border));
+    }
+
+    .step-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 32px 26px;
+      text-align: center;
+      transition: border-color var(--transition), transform var(--transition);
+    }
+    .step-card:hover {
+      border-color: var(--orange); transform: translateY(-4px);
+    }
+    .step-num {
+      font-family: var(--font-display); font-size: 3rem; font-weight: 700;
+      color: var(--orange); opacity: .18; line-height: 1; margin-bottom: 12px;
+    }
+    .step-icon {
+      width: 52px; height: 52px; border-radius: 14px;
+      background: rgba(249,115,22,.12);
+      display: flex; align-items: center; justify-content: center;
+      margin: -36px auto 20px; color: var(--orange);
+      border: 1px solid rgba(249,115,22,.25);
+    }
+    .step-card h3 {
+      font-family: var(--font-display); font-size: 1.1rem;
+      font-weight: 600; margin-bottom: 10px;
+    }
+    .step-card p { font-size: .88rem; color: var(--text-muted); line-height: 1.65; }
+
+    /* ─────────────────────────────────────────────
+       ═══════════════════════════════════════════
+       FLEET PAGE
+       ═══════════════════════════════════════════
+    ───────────────────────────────────────────── */
+    .fleet-page { padding: 60px 5% 100px; }
+    .fleet-header { max-width: 1240px; margin: 0 auto 40px; }
+    .fleet-header h1 {
+      font-family: var(--font-display); font-size: clamp(2rem, 4vw, 2.8rem);
+      font-weight: 700; letter-spacing: -.03em;
+    }
+    .fleet-header p { color: var(--text-muted); margin-top: 10px; font-size: 1rem; }
+
+    .fleet-controls {
+      max-width: 1240px; margin: 0 auto 36px;
+      display: flex; gap: 12px; flex-wrap: wrap;
+    }
+    .filter-btn {
+      padding: 9px 20px; border-radius: 8px; font-size: .85rem; font-weight: 500;
+      background: var(--surface); color: var(--text-muted);
+      border: 1px solid var(--border);
+      transition: all var(--transition);
+    }
+    .filter-btn:hover, .filter-btn.active {
+      background: rgba(249,115,22,.12); color: var(--orange);
+      border-color: rgba(249,115,22,.4);
+    }
+
+    .fleet-grid {
+      max-width: 1240px; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 24px;
+    }
+
+    /* ── VEHICLE CARD ── */
+    .vehicle-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); overflow: hidden;
+      transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
+    }
+    .vehicle-card:hover {
+      border-color: rgba(249,115,22,.5);
+      transform: translateY(-4px);
+      box-shadow: 0 16px 48px rgba(0,0,0,.5);
+    }
+
+    .card-image-wrap { position: relative; }
+    .card-image {
+      width: 100%; height: 210px;
+      background: linear-gradient(135deg, var(--surface2) 0%, #0f1115 100%);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 12px; color: var(--text-dim);
+    }
+    .card-image svg { transition: transform var(--transition); }
+    .vehicle-card:hover .card-image svg { transform: scale(1.08); }
+    .card-image-label { font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; }
+
+    .card-badge-row {
+      position: absolute; top: 12px; left: 12px; right: 12px;
+      display: flex; justify-content: space-between; align-items: flex-start;
+    }
+
+    .card-body { padding: 22px 22px 18px; }
+    .card-category { font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--orange); margin-bottom: 6px; }
+    .card-title { font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; margin-bottom: 4px; }
+    .card-model { font-size: .83rem; color: var(--text-muted); margin-bottom: 18px; }
+
+    .specs-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 1px; background: var(--border);
+      border-radius: var(--radius); overflow: hidden; margin-bottom: 18px;
+    }
+    .spec-item {
+      background: var(--surface2); padding: 12px 10px; text-align: center;
+    }
+    .spec-val { font-family: var(--font-display); font-size: .95rem; font-weight: 600; }
+    .spec-key { font-size: .68rem; color: var(--text-dim); margin-top: 3px; text-transform: uppercase; letter-spacing: .08em; }
+
+    .card-pricing {
+      display: flex; align-items: flex-end; gap: 16px; margin-bottom: 18px;
+    }
+    .price-block {}
+    .price-amount {
+      font-family: var(--font-display); font-size: 1.5rem;
+      font-weight: 700; color: var(--amber); line-height: 1;
+    }
+    .price-period { font-size: .75rem; color: var(--text-muted); }
+    .price-divider { width: 1px; height: 36px; background: var(--border); }
+    .price-weekly .price-amount { font-size: 1.15rem; color: var(--text); }
+
+    .card-actions { display: flex; gap: 10px; }
+    .card-actions .btn { flex: 1; justify-content: center; }
+
+    /* ─────────────────────────────────────────────
+       ═══════════════════════════════════════════
+       BOOKING PAGE
+       ═══════════════════════════════════════════
+    ───────────────────────────────────────────── */
+    .booking-page { padding: 60px 5% 100px; }
+    .booking-layout {
+      max-width: 1100px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 380px; gap: 28px;
+      align-items: start;
+    }
+
+    .booking-panel {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); overflow: hidden;
+    }
+    .panel-header {
+      padding: 22px 26px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 12px;
+    }
+    .panel-header-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: rgba(249,115,22,.12); color: var(--orange);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .panel-header h2 {
+      font-family: var(--font-display); font-size: 1.1rem; font-weight: 700;
+    }
+    .panel-header p { font-size: .82rem; color: var(--text-muted); margin-top: 2px; }
+    .panel-body { padding: 26px; }
+
+    /* Vehicle selector */
+    .vehicle-selector { display: flex; flex-direction: column; gap: 10px; }
+    .vehicle-option {
+      display: flex; align-items: center; gap: 16px;
+      padding: 16px; border-radius: var(--radius);
+      border: 1.5px solid var(--border); cursor: pointer;
+      transition: all var(--transition);
+      background: var(--surface2);
+    }
+    .vehicle-option:hover { border-color: rgba(249,115,22,.4); }
+    .vehicle-option.selected { border-color: var(--orange); background: rgba(249,115,22,.07); }
+
+    .vo-thumb {
+      width: 72px; height: 56px; border-radius: 8px; flex-shrink: 0;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-dim);
+    }
+    .vo-info { flex: 1; min-width: 0; }
+    .vo-name { font-family: var(--font-display); font-size: .95rem; font-weight: 600; }
+    .vo-model { font-size: .78rem; color: var(--text-muted); }
+    .vo-price {
+      font-family: var(--font-display); font-size: 1rem;
+      font-weight: 700; color: var(--amber); white-space: nowrap;
+    }
+    .vo-price span { font-size: .7rem; font-weight: 400; color: var(--text-dim); }
+    .vo-radio {
+      width: 20px; height: 20px; border-radius: 50%;
+      border: 2px solid var(--border); flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color var(--transition);
+    }
+    .vehicle-option.selected .vo-radio { border-color: var(--orange); }
+    .vo-radio::after {
+      content: ''; width: 10px; height: 10px; border-radius: 50%;
+      background: var(--orange); opacity: 0; transition: opacity var(--transition);
+    }
+    .vehicle-option.selected .vo-radio::after { opacity: 1; }
+
+    /* Date picker */
+    .date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    .form-group { display: flex; flex-direction: column; gap: 7px; }
+    .form-label {
+      font-size: .8rem; font-weight: 600; color: var(--text-muted);
+      letter-spacing: .06em; text-transform: uppercase;
+    }
+    .form-input {
+      width: 100%; padding: 12px 14px; border-radius: var(--radius);
+      background: var(--surface2); border: 1.5px solid var(--border);
+      color: var(--text); font-size: .92rem;
+      transition: border-color var(--transition), box-shadow var(--transition);
+      appearance: none;
+    }
+    .form-input:focus {
+      outline: none; border-color: var(--orange);
+      box-shadow: 0 0 0 3px rgba(249,115,22,.15);
+    }
+    .form-input.error { border-color: var(--error); }
+    .form-error { font-size: .78rem; color: var(--error); margin-top: -4px; }
+    .form-input::placeholder { color: var(--text-dim); }
+
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(.6) sepia(1) saturate(3) hue-rotate(3deg);
+      cursor: pointer;
+    }
+
+    .form-textarea {
+      resize: vertical; min-height: 90px;
+    }
+
+    /* Booking summary sidebar */
+    .summary-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); overflow: hidden;
+      position: sticky; top: 88px;
+    }
+    .summary-header {
+      padding: 20px 22px; border-bottom: 1px solid var(--border);
+      background: rgba(249,115,22,.06);
+    }
+    .summary-header h3 {
+      font-family: var(--font-display); font-size: 1rem; font-weight: 700;
+    }
+    .summary-body { padding: 22px; }
+
+    .summary-vehicle {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px; border-radius: var(--radius);
+      background: var(--surface2); border: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+    .sv-thumb {
+      width: 56px; height: 44px; border-radius: 8px;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .sv-name { font-family: var(--font-display); font-size: .9rem; font-weight: 600; }
+    .sv-model { font-size: .75rem; color: var(--text-muted); }
+
+    .summary-rows { display: flex; flex-direction: column; gap: 0; }
+    .summary-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 11px 0; border-bottom: 1px solid var(--border);
+      font-size: .88rem;
+    }
+    .summary-row:last-child { border-bottom: none; }
+    .summary-row-label { color: var(--text-muted); }
+    .summary-row-val { font-weight: 600; }
+    .summary-row-val.highlight { color: var(--amber); }
+
+    .summary-total {
+      margin-top: 16px; padding: 16px;
+      background: rgba(249,115,22,.08); border-radius: var(--radius);
+      border: 1px solid rgba(249,115,22,.2);
+    }
+    .summary-total-label {
+      font-size: .78rem; color: var(--text-muted); text-transform: uppercase;
+      letter-spacing: .08em; margin-bottom: 6px;
+    }
+    .summary-total-amount {
+      font-family: var(--font-display); font-size: 2rem;
+      font-weight: 700; color: var(--text); letter-spacing: -.03em;
+    }
+    .summary-total-note { font-size: .75rem; color: var(--text-muted); margin-top: 4px; }
+
+    /* Booking steps progress */
+    .step-progress {
+      display: flex; gap: 0; margin-bottom: 28px;
+    }
+    .step-prog-item {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; gap: 8px; position: relative;
+    }
+    .step-prog-item:not(:last-child)::after {
+      content: '';
+      position: absolute; top: 15px; left: 50%; width: 100%; height: 2px;
+      background: var(--border);
+      z-index: 0;
+    }
+    .step-prog-item.done:not(:last-child)::after { background: var(--orange); }
+    .step-prog-dot {
+      width: 30px; height: 30px; border-radius: 50%; z-index: 1;
+      border: 2px solid var(--border); background: var(--surface);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .8rem; font-weight: 700; color: var(--text-dim);
+      transition: all var(--transition);
+    }
+    .step-prog-item.active .step-prog-dot {
+      border-color: var(--orange); color: var(--orange);
+      background: rgba(249,115,22,.1);
+    }
+    .step-prog-item.done .step-prog-dot {
+      border-color: var(--success); background: var(--success); color: #fff;
+    }
+    .step-prog-label {
+      font-size: .72rem; font-weight: 500; color: var(--text-dim);
+      letter-spacing: .04em; text-align: center;
+    }
+    .step-prog-item.active .step-prog-label { color: var(--orange); }
+    .step-prog-item.done .step-prog-label { color: var(--text-muted); }
+
+    /* Booking sub-steps */
+    .booking-step { display: none; flex-direction: column; gap: 20px; }
+    .booking-step.active { display: flex; }
+
+    .step-nav {
+      display: flex; gap: 12px; justify-content: flex-end;
+      padding-top: 16px; border-top: 1px solid var(--border); margin-top: 8px;
+    }
+
+    /* Loading state */
+    .btn-loading { position: relative; pointer-events: none; }
+    .btn-loading::after {
+      content: '';
+      position: absolute; right: 16px; top: 50%;
+      transform: translateY(-50%);
+      width: 16px; height: 16px; border-radius: 50%;
+      border: 2px solid rgba(255,255,255,.3);
+      border-top-color: #fff;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: translateY(-50%) rotate(360deg); } }
+
+    /* Success state */
+    .booking-success {
+      display: none; flex-direction: column; align-items: center;
+      text-align: center; padding: 40px 20px; gap: 16px;
+    }
+    .booking-success.active { display: flex; }
+    .success-icon {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: rgba(34,197,94,.12); border: 2px solid var(--success);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--success); animation: scale-in .4s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes scale-in {
+      from { transform: scale(0); opacity: 0; }
+      to   { transform: scale(1); opacity: 1; }
+    }
+    .booking-success h3 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; }
+    .booking-success p { color: var(--text-muted); font-size: .92rem; max-width: 320px; }
+    .booking-id { font-family: var(--font-display); font-size: .85rem; color: var(--orange); }
+
+    /* ─────────────────────────────────────────────
+       ═══════════════════════════════════════════
+       CONTACT PAGE
+       ═══════════════════════════════════════════
+    ───────────────────────────────────────────── */
+    .contact-page { padding: 60px 5% 100px; }
+    .contact-layout {
+      max-width: 1100px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start;
+    }
+    .contact-info h1 {
+      font-family: var(--font-display); font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+      font-weight: 700; letter-spacing: -.03em; margin-bottom: 14px;
+    }
+    .contact-info p { color: var(--text-muted); line-height: 1.7; margin-bottom: 36px; }
+
+    .contact-items { display: flex; flex-direction: column; gap: 16px; }
+    .contact-item {
+      display: flex; align-items: center; gap: 14px;
+      padding: 16px; border-radius: var(--radius);
+      background: var(--surface); border: 1px solid var(--border);
+    }
+    .ci-icon {
+      width: 42px; height: 42px; border-radius: 10px;
+      background: rgba(249,115,22,.1); color: var(--orange);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .ci-label { font-size: .75rem; color: var(--text-muted); margin-bottom: 3px; }
+    .ci-val { font-weight: 600; font-size: .92rem; }
+
+    .contact-form-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+    }
+    .contact-form-card .panel-header { background: rgba(249,115,22,.05); }
+    .contact-form-card .panel-body { display: flex; flex-direction: column; gap: 18px; }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    .form-select {
+      width: 100%; padding: 12px 14px; border-radius: var(--radius);
+      background: var(--surface2); border: 1.5px solid var(--border);
+      color: var(--text); font-size: .92rem;
+      transition: border-color var(--transition);
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 14px center;
+      padding-right: 40px;
+    }
+    .form-select:focus { outline: none; border-color: var(--orange); }
+
+    /* ─────────────────────────────────────────────
+       FOOTER
+    ───────────────────────────────────────────── */
+    .footer {
+      border-top: 1px solid var(--border); padding: 40px 5% 28px;
+      background: var(--surface);
+    }
+    .footer-inner {
+      max-width: 1240px; margin: 0 auto;
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 20px; flex-wrap: wrap;
+    }
+    .footer-logo {
+      font-family: var(--font-display); font-size: 1.1rem; font-weight: 700;
+    }
+    .footer-logo span { color: var(--orange); }
+    .footer-copy { font-size: .82rem; color: var(--text-dim); }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-links a { font-size: .82rem; color: var(--text-dim); transition: color var(--transition); }
+    .footer-links a:hover { color: var(--orange); }
+
+    /* ─────────────────────────────────────────────
+       TOAST NOTIFICATION
+    ───────────────────────────────────────────── */
+    .toast-container {
+      position: fixed; bottom: 24px; right: 24px; z-index: 999;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .toast {
+      padding: 14px 20px; border-radius: var(--radius);
+      background: var(--surface2); border: 1px solid var(--border);
+      box-shadow: var(--shadow); font-size: .88rem; font-weight: 500;
+      display: flex; align-items: center; gap: 10px; max-width: 320px;
+      transform: translateX(120%); transition: transform .35s cubic-bezier(.34,1.56,.64,1);
+    }
+    .toast.show { transform: translateX(0); }
+    .toast-success { border-color: rgba(34,197,94,.4); }
+    .toast-error   { border-color: rgba(239,68,68,.4); }
+
+    /* ─────────────────────────────────────────────
+       RESPONSIVE
+    ───────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .hero-grid { grid-template-columns: 1fr; }
+      .hero-visual { display: none; }
+      .steps-grid { grid-template-columns: 1fr; }
+      .steps-grid::before { display: none; }
+      .booking-layout { grid-template-columns: 1fr; }
+      .summary-card { position: static; }
+      .contact-layout { grid-template-columns: 1fr; }
+
+      .nav-links, .nav-cta { display: none; }
+      .hamburger { display: flex; }
+    }
+    @media (max-width: 600px) {
+      .hero { padding: 48px 5%; min-height: auto; }
+      .fleet-grid { grid-template-columns: 1fr; }
+      .date-row { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+      .hero-stats { gap: 20px; flex-wrap: wrap; }
+      .card-actions { flex-direction: column; }
+    }
+
+    /* ─────────────────────────────────────────────
+       UTILITY
+    ───────────────────────────────────────────── */
+    .separator { height: 1px; background: var(--border); margin: 0 26px; }
+    .text-center { text-align: center; }
+    .mt-8 { margin-top: 8px; }
+    .mt-16 { margin-top: 16px; }
+    .mt-24 { margin-top: 24px; }
+
+    .empty-state {
+      text-align: center; padding: 60px 20px;
+      color: var(--text-muted);
+    }
+    .empty-state svg { opacity: .25; margin: 0 auto 16px; }
+    .empty-state p { font-size: .9rem; }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     NAVIGATION
+══════════════════════════════════════════ -->
+<nav class="nav">
+  <div class="nav-logo">
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+      <rect width="28" height="28" rx="7" fill="currentColor" opacity=".15"/>
+      <path d="M4 20L8 12L13 17L17 10L24 20H4Z" fill="currentColor"/>
+      <circle cx="20" cy="9" r="3" fill="currentColor" opacity=".6"/>
+    </svg>
+    Iron<span>Haul</span>
+  </div>
+
+  <div class="nav-links">
+    <button class="nav-link active" onclick="navigate('home')">Home</button>
+    <button class="nav-link" onclick="navigate('fleet')">Fleet</button>
+    <button class="nav-link" onclick="navigate('booking')">Book Equipment</button>
+    <button class="nav-link" onclick="navigate('contact')">Contact</button>
+  </div>
+
+  <button class="btn-cta nav-cta" onclick="navigate('booking')">Get a Quote</button>
+
+  <button class="hamburger" id="hamburger" onclick="toggleMobileMenu()">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <button class="nav-link" onclick="navigate('home'); closeMobileMenu()">Home</button>
+  <button class="nav-link" onclick="navigate('fleet'); closeMobileMenu()">Fleet</button>
+  <button class="nav-link" onclick="navigate('booking'); closeMobileMenu()">Book Equipment</button>
+  <button class="nav-link" onclick="navigate('contact'); closeMobileMenu()">Contact</button>
+</div>
+
+<!-- ══════════════════════════════════════════
+     HOME PAGE
+══════════════════════════════════════════ -->
+<div class="page active" id="page-home">
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-grid">
+      <div class="hero-content">
+        <div class="hero-eyebrow">
+          <div class="hero-eyebrow-line"></div>
+          <span>Licensed &amp; Insured — 15 Years of Experience</span>
+        </div>
+
+        <h1>Heavy Machinery,<br>Ready for Your<br><em>Next Project</em></h1>
+        <p class="hero-sub">
+          Professional-grade excavators, dump trucks, and earth-moving equipment available for daily or weekly rental. Delivered to your site, fueled and ready to work.
+        </p>
+
+        <div class="hero-actions">
+          <button class="btn btn-primary" onclick="navigate('fleet')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            View Fleet
+          </button>
+          <button class="btn btn-outline" onclick="navigate('contact')">Get a Custom Quote</button>
+        </div>
+
+        <div class="hero-stats">
+          <div>
+            <div class="hero-stat-num">40<span>+</span></div>
+            <div class="hero-stat-label">Machines Available</div>
+          </div>
+          <div>
+            <div class="hero-stat-num">500<span>+</span></div>
+            <div class="hero-stat-label">Projects Completed</div>
+          </div>
+          <div>
+            <div class="hero-stat-num">24<span>h</span></div>
+            <div class="hero-stat-label">Dispatch Support</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <div class="hero-card-stack">
+          <div class="hero-card hero-card-main">
+            <div class="card-badge-row">
+              <div class="availability-chip">Available Now</div>
+            </div>
+            <div class="vehicle-img-placeholder" style="height: 260px;">
+              <svg width="72" height="72" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="6" y="32" width="36" height="18" rx="2"/>
+                <rect x="30" y="22" width="18" height="28" rx="2"/>
+                <circle cx="14" cy="52" r="6"/><circle cx="42" cy="52" r="6"/>
+                <path d="M30 28L24 22H16L10 28"/>
+                <rect x="44" y="30" width="12" height="6" rx="1"/>
+              </svg>
+              <span>CAT 336 Excavator</span>
+            </div>
+            <div class="hero-card-info">
+              <h3>CAT 336 Next Gen Excavator</h3>
+              <p>36-tonne class · 270 hp · 2.1 m³ bucket</p>
+              <div style="display:flex; gap:10px; margin-top:12px; align-items:center;">
+                <span style="font-family:var(--font-display);font-size:1.3rem;font-weight:700;color:var(--amber);">$1,850</span>
+                <span style="font-size:.75rem;color:var(--text-muted);">/day</span>
+                <span class="badge badge-orange" style="margin-left:auto;">Book Now</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="hero-card hero-card-thumb">
+            <div class="vehicle-img-placeholder" style="height: 90px;">
+              <svg width="36" height="36" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="4" y="28" width="56" height="18" rx="2"/>
+                <path d="M4 28l8-14h32l8 14"/>
+                <circle cx="16" cy="48" r="6"/><circle cx="48" cy="48" r="6"/>
+              </svg>
+            </div>
+            <div class="hero-card-info" style="padding: 10px 14px;">
+              <h3 style="font-size:.88rem;">Dump Truck — Available</h3>
+              <p style="font-size:.74rem;">$780/day · 14-tonne payload</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tape divider -->
+  <div class="tape-divider"><span class="tape-divider-label">How It Works</span></div>
+
+  <!-- How It Works -->
+  <section class="how-section">
+    <div class="section-header">
+      <div class="section-eyebrow">Simple 3-Step Process</div>
+      <h2>From Quote to <br>Machine on Site</h2>
+      <p>No complicated paperwork. No hidden fees. Choose your machine, pick your dates, and we'll handle delivery.</p>
+    </div>
+
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-num">01</div>
+        <div class="step-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        </div>
+        <h3>Browse &amp; Select</h3>
+        <p>Filter our fleet by machine type and capacity. Compare specs and pricing, then pick the right equipment for your project scope and terrain.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">02</div>
+        <div class="step-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <h3>Book Your Dates</h3>
+        <p>Use our availability calendar to lock in your rental window. See instant price calculations including delivery to your site address.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">03</div>
+        <div class="step-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <h3>Equipment Delivered</h3>
+        <p>We deliver to your job site, fueled and inspected. An operator briefing is included. Collect at the end of your rental with no hidden charges.</p>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     FLEET PAGE
+══════════════════════════════════════════ -->
+<div class="page" id="page-fleet">
+  <div class="fleet-page">
+    <div class="fleet-header">
+      <div class="section-eyebrow">Our Equipment</div>
+      <h1>The IronHaul Fleet</h1>
+      <p>40+ machines maintained to OEM standards. All units are GPS-tracked, fully insured, and safety-inspected before every rental.</p>
+    </div>
+
+    <div class="fleet-controls">
+      <button class="filter-btn active" onclick="filterFleet('all', this)">All Equipment</button>
+      <button class="filter-btn" onclick="filterFleet('excavator', this)">Excavators</button>
+      <button class="filter-btn" onclick="filterFleet('truck', this)">Dump Trucks</button>
+      <button class="filter-btn" onclick="filterFleet('backhoe', this)">Backhoe Loaders</button>
+      <button class="filter-btn" onclick="filterFleet('compactor', this)">Compactors</button>
+      <button class="filter-btn" onclick="filterFleet('loader', this)">Wheel Loaders</button>
+    </div>
+
+    <div class="fleet-grid" id="fleetGrid"></div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     BOOKING PAGE
+══════════════════════════════════════════ -->
+<div class="page" id="page-booking">
+  <div class="booking-page">
+    <div class="fleet-header">
+      <div class="section-eyebrow">Availability &amp; Booking</div>
+      <h1>Reserve Your Equipment</h1>
+      <p>Select your machine, choose your rental dates, and confirm your delivery address. We'll reach out within 2 hours to confirm.</p>
+    </div>
+
+    <div class="booking-layout">
+      <!-- LEFT: Booking form -->
+      <div>
+        <!-- Step progress indicator -->
+        <div class="step-progress" id="stepProgress">
+          <div class="step-prog-item active" id="prog-1">
+            <div class="step-prog-dot">1</div>
+            <div class="step-prog-label">Select Machine</div>
+          </div>
+          <div class="step-prog-item" id="prog-2">
+            <div class="step-prog-dot">2</div>
+            <div class="step-prog-label">Choose Dates</div>
+          </div>
+          <div class="step-prog-item" id="prog-3">
+            <div class="step-prog-dot">3</div>
+            <div class="step-prog-label">Your Details</div>
+          </div>
+        </div>
+
+        <!-- Step 1: Vehicle Selection -->
+        <div class="booking-panel" id="step1Panel">
+          <div class="panel-header">
+            <div class="panel-header-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="14" width="12" height="7" rx="1"/><path d="M6 14l2-7h8l2 7"/><circle cx="9" cy="21" r="1"/><circle cx="15" cy="21" r="1"/></svg>
+            </div>
+            <div>
+              <h2>Select Machine</h2>
+              <p>Choose the equipment that suits your project</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="vehicle-selector" id="vehicleSelector"></div>
+            <div class="step-nav">
+              <button class="btn btn-primary" onclick="goToStep(2)">
+                Continue to Dates
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Dates & Delivery -->
+        <div class="booking-panel" id="step2Panel" style="display:none;">
+          <div class="panel-header">
+            <div class="panel-header-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <div>
+              <h2>Rental Dates &amp; Site</h2>
+              <p>Select your rental window and delivery address</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="booking-step active" id="stepDates">
+              <div class="date-row">
+                <div class="form-group">
+                  <label class="form-label">Start Date</label>
+                  <input type="date" class="form-input" id="startDate" onchange="calcPrice()" />
+                  <span class="form-error" id="startDateErr"></span>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">End Date</label>
+                  <input type="date" class="form-input" id="endDate" onchange="calcPrice()" />
+                  <span class="form-error" id="endDateErr"></span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Delivery / Site Address</label>
+                <input type="text" class="form-input" id="siteAddress" placeholder="e.g. 482 Industrial Blvd, Sacramento, CA 94203" />
+                <span class="form-error" id="addressErr"></span>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Site Access Notes <span style="color:var(--text-dim);font-weight:400;">(optional)</span></label>
+                <textarea class="form-input form-textarea" id="accessNotes" placeholder="Gate codes, weight limits, preferred delivery time window, site contact…"></textarea>
+              </div>
+            </div>
+            <div class="step-nav">
+              <button class="btn btn-ghost" onclick="goToStep(1)">Back</button>
+              <button class="btn btn-primary" onclick="goToStep(3)">
+                Continue to Details
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Contact Details + Submit -->
+        <div class="booking-panel" id="step3Panel" style="display:none;">
+          <div class="panel-header">
+            <div class="panel-header-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div>
+              <h2>Your Details</h2>
+              <p>We'll send confirmation and invoice to this contact</p>
+            </div>
+          </div>
+          <div class="panel-body" style="display:flex;flex-direction:column;gap:16px;">
+            <!-- Success state -->
+            <div class="booking-success" id="bookingSuccess">
+              <div class="success-icon">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <h3>Booking Submitted!</h3>
+              <p>We'll review your request and confirm availability within 2 hours. Check your email for next steps.</p>
+              <div class="booking-id" id="bookingId"></div>
+              <button class="btn btn-primary mt-16" onclick="resetBooking()">Book Another Machine</button>
+            </div>
+
+            <!-- Form -->
+            <div id="step3Form" style="display:flex;flex-direction:column;gap:16px;">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                <div class="form-group">
+                  <label class="form-label">First Name</label>
+                  <input type="text" class="form-input" id="firstName" placeholder="Marcus" />
+                  <span class="form-error" id="firstNameErr"></span>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Last Name</label>
+                  <input type="text" class="form-input" id="lastName" placeholder="Rivera" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Company / Contractor Name</label>
+                <input type="text" class="form-input" id="company" placeholder="Rivera Site Works LLC" />
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                <div class="form-group">
+                  <label class="form-label">Phone Number</label>
+                  <input type="tel" class="form-input" id="phone" placeholder="+1 (555) 000-0000" />
+                  <span class="form-error" id="phoneErr"></span>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Email Address</label>
+                  <input type="email" class="form-input" id="email" placeholder="marcus@riveraworks.com" />
+                  <span class="form-error" id="emailErr"></span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Additional Notes</label>
+                <textarea class="form-input form-textarea" id="bookingNotes" placeholder="Project type, special requirements, operator certification questions…"></textarea>
+              </div>
+              <div class="step-nav">
+                <button class="btn btn-ghost" onclick="goToStep(2)">Back</button>
+                <button class="btn btn-primary" id="submitBtn" onclick="submitBooking()">
+                  Submit Booking Request
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Summary -->
+      <div class="summary-card">
+        <div class="summary-header">
+          <h3>Booking Summary</h3>
+        </div>
+        <div class="summary-body">
+          <div class="summary-vehicle" id="summaryVehicle">
+            <div class="sv-thumb">
+              <svg width="28" height="28" viewBox="0 0 64 64" fill="none" stroke="var(--text-dim)" stroke-width="1.5"><rect x="6" y="32" width="36" height="18" rx="2"/><rect x="30" y="22" width="18" height="28" rx="2"/><circle cx="14" cy="52" r="6"/><circle cx="42" cy="52" r="6"/></svg>
+            </div>
+            <div>
+              <div class="sv-name" id="summaryName">Select a machine</div>
+              <div class="sv-model" id="summaryModel">—</div>
+            </div>
+          </div>
+
+          <div class="summary-rows">
+            <div class="summary-row">
+              <span class="summary-row-label">Start Date</span>
+              <span class="summary-row-val" id="sumStart">—</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-row-label">End Date</span>
+              <span class="summary-row-val" id="sumEnd">—</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-row-label">Rental Duration</span>
+              <span class="summary-row-val highlight" id="sumDays">—</span>
+            </div>
+            <div class="separator" style="margin:0;"></div>
+            <div class="summary-row">
+              <span class="summary-row-label">Daily Rate</span>
+              <span class="summary-row-val" id="sumRate">—</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-row-label">Subtotal</span>
+              <span class="summary-row-val" id="sumSubtotal">—</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-row-label">Est. Delivery Fee</span>
+              <span class="summary-row-val" id="sumDelivery">—</span>
+            </div>
+          </div>
+
+          <div class="summary-total">
+            <div class="summary-total-label">Estimated Total</div>
+            <div class="summary-total-amount" id="sumTotal">$—</div>
+            <div class="summary-total-note">Exact invoice issued after confirmation. Delivery fee may vary by distance.</div>
+          </div>
+
+          <div style="margin-top:18px;">
+            <div class="badge badge-green" style="width:100%;justify-content:center;padding:10px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              No payment required to submit
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     CONTACT PAGE
+══════════════════════════════════════════ -->
+<div class="page" id="page-contact">
+  <div class="contact-page">
+    <div class="contact-layout">
+      <div class="contact-info">
+        <div class="section-eyebrow">Get in Touch</div>
+        <h1>Custom Contracts &amp; Long-Term Rentals</h1>
+        <p>Need equipment for an extended project, multiple machines on site, or have specific logistics requirements? Our team works directly with general contractors and site managers to put together the right package.</p>
+
+        <div class="contact-items">
+          <div class="contact-item">
+            <div class="ci-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.61 12 19.79 19.79 0 0 1 1.57 3.4 2 2 0 0 1 3.55 1.22h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.8a16 16 0 0 0 6.29 6.29l.88-.88a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            </div>
+            <div>
+              <div class="ci-label">Phone</div>
+              <div class="ci-val">+1 (800) 476-6428</div>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="ci-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            </div>
+            <div>
+              <div class="ci-label">Email</div>
+              <div class="ci-val">dispatch@ironhaul.com</div>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="ci-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div>
+              <div class="ci-label">Office Hours</div>
+              <div class="ci-val">Mon – Sat, 6:00 AM – 6:00 PM</div>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="ci-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            </div>
+            <div>
+              <div class="ci-label">Yard Location</div>
+              <div class="ci-val">1840 Commerce Drive, Modesto, CA 95356</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="contact-form-card booking-panel">
+        <div class="panel-header">
+          <div class="panel-header-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <div>
+            <h2>Send an Inquiry</h2>
+            <p>We typically respond within 4 business hours</p>
+          </div>
+        </div>
+        <div class="panel-body" style="display:flex;flex-direction:column;gap:16px;" id="contactFormBody">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">First Name</label>
+              <input type="text" class="form-input" id="cFirstName" placeholder="Jordan" />
+              <span class="form-error" id="cFirstNameErr"></span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Last Name</label>
+              <input type="text" class="form-input" id="cLastName" placeholder="Smith" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Company</label>
+            <input type="text" class="form-input" id="cCompany" placeholder="Smith General Contracting" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-input" id="cEmail" placeholder="jordan@smithgc.com" />
+            <span class="form-error" id="cEmailErr"></span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Inquiry Type</label>
+            <select class="form-select" id="cInquiryType">
+              <option value="">Select a topic…</option>
+              <option value="long-term">Long-term contract rental (4+ weeks)</option>
+              <option value="multi-unit">Multi-unit / fleet booking</option>
+              <option value="operator">Operator services inquiry</option>
+              <option value="custom">Custom delivery logistics</option>
+              <option value="other">Other question</option>
+            </select>
+            <span class="form-error" id="cTypeErr"></span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Message</label>
+            <textarea class="form-input form-textarea" id="cMessage" style="min-height:120px;" placeholder="Describe your project, required equipment, timeline, and any questions you have…"></textarea>
+            <span class="form-error" id="cMsgErr"></span>
+          </div>
+          <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="submitContact()">
+            Send Inquiry
+          </button>
+
+          <div id="contactSuccess" style="display:none; text-align:center; padding:20px 0;">
+            <div class="badge badge-green" style="justify-content:center;padding:14px 20px;font-size:.9rem;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              Message sent! We'll be in touch shortly.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     FOOTER
+══════════════════════════════════════════ -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-logo">Iron<span>Haul</span> Equipment Rentals</div>
+    <div class="footer-copy">© 2025 IronHaul LLC. All rights reserved.</div>
+    <div class="footer-links">
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms &amp; Conditions</a>
+      <a href="#">Safety Policy</a>
+    </div>
+  </div>
+</footer>
+
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer"></div>
+
+
+<script>
+/* ═══════════════════════════════════════════════
+   DATA — Fleet catalog
+═══════════════════════════════════════════════ */
+const FLEET = [
+  {
+    id: 'exc-336',
+    category: 'excavator',
+    categoryLabel: 'Excavator',
+    name: 'CAT 336 Next Gen',
+    model: 'Caterpillar 336 GC',
+    specs: { weight: '36 T', power: '270 hp', capacity: '2.1 m³' },
+    specLabels: { weight: 'Op. Weight', power: 'Horsepower', capacity: 'Bucket Cap.' },
+    dailyRate: 1850,
+    weeklyRate: 10500,
+    available: true,
+    svgPath: `<path d="M8 38h30v10H8z" rx="2"/><path d="M32 28h16v20H32z" rx="2"/><circle cx="14" cy="50" r="6"/><circle cx="42" cy="50" r="6"/><path d="M32 34l-8-12H14l-6 12"/><rect x="44" y="36" width="10" height="5" rx="1"/>`,
+  },
+  {
+    id: 'exc-pc200',
+    category: 'excavator',
+    categoryLabel: 'Excavator',
+    name: 'Komatsu PC200-11',
+    model: 'Komatsu PC200',
+    specs: { weight: '20 T', power: '148 hp', capacity: '0.9 m³' },
+    specLabels: { weight: 'Op. Weight', power: 'Horsepower', capacity: 'Bucket Cap.' },
+    dailyRate: 1100,
+    weeklyRate: 6200,
+    available: true,
+    svgPath: `<path d="M8 38h30v10H8z"/><path d="M32 28h16v20H32z"/><circle cx="14" cy="50" r="5"/><circle cx="42" cy="50" r="5"/>`,
+  },
+  {
+    id: 'truck-hd785',
+    category: 'truck',
+    categoryLabel: 'Dump Truck',
+    name: 'Komatsu HD785',
+    model: 'Articulated Dump Truck',
+    specs: { weight: '46 T', power: '895 hp', capacity: '47 m³' },
+    specLabels: { weight: 'Payload', power: 'Horsepower', capacity: 'Struck Cap.' },
+    dailyRate: 2200,
+    weeklyRate: 12500,
+    available: true,
+    svgPath: `<rect x="4" y="28" width="56" height="18" rx="2"/><path d="M4 28l8-14h32l8 14"/><circle cx="16" cy="48" r="6"/><circle cx="48" cy="48" r="6"/><rect x="6" y="22" width="26" height="6"/>`,
+  },
+  {
+    id: 'truck-volvo',
+    category: 'truck',
+    categoryLabel: 'Dump Truck',
+    name: 'Volvo A40G',
+    model: 'Articulated Hauler',
+    specs: { weight: '39 T', power: '540 hp', capacity: '24 m³' },
+    specLabels: { weight: 'Payload', power: 'Horsepower', capacity: 'Body Vol.' },
+    dailyRate: 1750,
+    weeklyRate: 9800,
+    available: false,
+    svgPath: `<rect x="4" y="30" width="56" height="16" rx="2"/><path d="M4 30l6-12h28l6 12"/><circle cx="14" cy="48" r="5"/><circle cx="44" cy="48" r="5"/>`,
+  },
+  {
+    id: 'bh-cat420',
+    category: 'backhoe',
+    categoryLabel: 'Backhoe Loader',
+    name: 'CAT 420 XE',
+    model: 'Caterpillar 420 Series',
+    specs: { weight: '7.7 T', power: '112 hp', capacity: '0.3 m³' },
+    specLabels: { weight: 'Op. Weight', power: 'Horsepower', capacity: 'Bucket Cap.' },
+    dailyRate: 780,
+    weeklyRate: 4200,
+    available: true,
+    svgPath: `<rect x="18" y="34" width="28" height="16" rx="2"/><circle cx="24" cy="52" r="6"/><circle cx="40" cy="52" r="6"/><rect x="4" y="34" width="16" height="16" rx="1"/><path d="M46 34l10-12 4 4-8 8"/>`,
+  },
+  {
+    id: 'bh-jd410',
+    category: 'backhoe',
+    categoryLabel: 'Backhoe Loader',
+    name: 'John Deere 410L',
+    model: 'JD 410L EP',
+    specs: { weight: '8.8 T', power: '100 hp', capacity: '0.4 m³' },
+    specLabels: { weight: 'Op. Weight', power: 'Horsepower', capacity: 'Bucket Cap.' },
+    dailyRate: 850,
+    weeklyRate: 4700,
+    available: true,
+    svgPath: `<rect x="18" y="34" width="28" height="16" rx="2"/><circle cx="24" cy="52" r="6"/><circle cx="40" cy="52" r="6"/><rect x="4" y="34" width="16" height="16" rx="1"/>`,
+  },
+  {
+    id: 'comp-cs56',
+    category: 'compactor',
+    categoryLabel: 'Compactor',
+    name: 'CAT CS56B Vibratory',
+    model: 'Soil Compactor',
+    specs: { weight: '11 T', power: '173 hp', capacity: '2.1 m' },
+    specLabels: { weight: 'Op. Weight', power: 'Horsepower', capacity: 'Drum Width' },
+    dailyRate: 690,
+    weeklyRate: 3800,
+    available: true,
+    svgPath: `<rect x="22" y="36" width="20" height="14" rx="1"/><circle cx="32" cy="50" r="10"/><rect x="4" y="32" width="18" height="22" rx="2"/><rect x="42" y="32" width="18" height="22" rx="2"/>`,
+  },
+  {
+    id: 'loader-966',
+    category: 'loader',
+    categoryLabel: 'Wheel Loader',
+    name: 'CAT 966 GC',
+    model: 'Large Wheel Loader',
+    specs: { weight: '22 T', power: '268 hp', capacity: '3.8 m³' },
+    specLabels: { weight: 'Op. Weight', power: 'Horsepower', capacity: 'Bucket Cap.' },
+    dailyRate: 1350,
+    weeklyRate: 7600,
+    available: true,
+    svgPath: `<rect x="22" y="32" width="32" height="22" rx="2"/><circle cx="28" cy="56" r="6"/><circle cx="48" cy="56" r="6"/><path d="M22 38H8l-4 8v8h18"/><path d="M2 46h20"/><rect x="4" y="42" width="4" height="12" rx="1"/>`,
+  },
+];
+
+const DELIVERY_FEE = 350;
+let activeFilter = 'all';
+let selectedVehicleId = null;
+let currentStep = 1;
+
+/* ═══════════════════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════════════════ */
+function navigate(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+
+  const links = document.querySelectorAll('.nav-link');
+  const map = { home: 0, fleet: 1, booking: 2, contact: 3 };
+  if (map[page] !== undefined) links[map[page]].classList.add('active');
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function toggleMobileMenu() {
+  const menu = document.getElementById('mobileMenu');
+  const btn   = document.getElementById('hamburger');
+  menu.classList.toggle('open');
+  btn.classList.toggle('open');
+}
+
+function closeMobileMenu() {
+  document.getElementById('mobileMenu').classList.remove('open');
+  document.getElementById('hamburger').classList.remove('open');
+}
+
+/* ═══════════════════════════════════════════════
+   VEHICLE SVG ICON
+═══════════════════════════════════════════════ */
+function vehicleIcon(v, size=52, color='currentColor') {
+  return `<svg width="${size}" height="${size}" viewBox="0 0 64 64" fill="none" stroke="${color}" stroke-width="1.5">${v.svgPath}</svg>`;
+}
+
+/* ═══════════════════════════════════════════════
+   FLEET CATALOG
+═══════════════════════════════════════════════ */
+function renderFleet(filter) {
+  const grid = document.getElementById('fleetGrid');
+  const vehicles = filter === 'all' ? FLEET : FLEET.filter(v => v.category === filter);
+
+  if (vehicles.length === 0) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><svg width="56" height="56" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="6" y="32" width="36" height="18" rx="2"/><rect x="30" y="22" width="18" height="28" rx="2"/><circle cx="14" cy="52" r="6"/><circle cx="42" cy="52" r="6"/></svg><p>No equipment in that category right now. Check back soon.</p></div>`;
+    return;
+  }
+
+  grid.innerHTML = vehicles.map(v => `
+    <div class="vehicle-card" data-id="${v.id}">
+      <div class="card-image-wrap">
+        <div class="card-image">
+          ${vehicleIcon(v, 64, 'var(--text-dim)')}
+          <span class="card-image-label">${v.name}</span>
+        </div>
+        <div class="card-badge-row">
+          <span class="badge ${v.available ? 'badge-green' : 'badge-dim'}">
+            ${v.available
+              ? `<span style="width:7px;height:7px;border-radius:50%;background:var(--success);display:inline-block;"></span> Available`
+              : `<span style="width:7px;height:7px;border-radius:50%;background:var(--text-dim);display:inline-block;"></span> On Hire`}
+          </span>
+          <span class="badge badge-orange">${v.categoryLabel}</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-category">${v.categoryLabel}</div>
+        <div class="card-title">${v.name}</div>
+        <div class="card-model">${v.model}</div>
+
+        <div class="specs-grid">
+          ${Object.entries(v.specs).map(([k, val]) => `
+            <div class="spec-item">
+              <div class="spec-val">${val}</div>
+              <div class="spec-key">${v.specLabels[k]}</div>
+            </div>
+          `).join('')}
+        </div>
+
+        <div class="card-pricing">
+          <div class="price-block">
+            <div class="price-amount">$${v.dailyRate.toLocaleString()}</div>
+            <div class="price-period">per day</div>
+          </div>
+          <div class="price-divider"></div>
+          <div class="price-block price-weekly">
+            <div class="price-amount">$${v.weeklyRate.toLocaleString()}</div>
+            <div class="price-period">per week</div>
+          </div>
+        </div>
+
+        <div class="card-actions">
+          <button class="btn btn-primary btn-sm" style="justify-content:center;"
+            onclick="bookVehicle('${v.id}')" ${!v.available ? 'disabled style="opacity:.5;cursor:not-allowed;"' : ''}>
+            Check Availability
+          </button>
+          <button class="btn btn-outline btn-sm" style="justify-content:center;"
+            onclick="showToast('Spec sheet for ${v.name} — coming soon!', 'info')">
+            Spec Sheet
+          </button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterFleet(category, btn) {
+  activeFilter = category;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderFleet(category);
+}
+
+function bookVehicle(id) {
+  selectedVehicleId = id;
+  navigate('booking');
+  initBooking();
+}
+
+/* ═══════════════════════════════════════════════
+   BOOKING SYSTEM
+═══════════════════════════════════════════════ */
+function initBooking() {
+  renderVehicleSelector();
+  setMinDates();
+  currentStep = 1;
+  updateStepUI();
+}
+
+function renderVehicleSelector() {
+  const available = FLEET.filter(v => v.available);
+  document.getElementById('vehicleSelector').innerHTML = available.map(v => `
+    <div class="vehicle-option ${selectedVehicleId === v.id ? 'selected' : ''}"
+         onclick="selectVehicle('${v.id}')">
+      <div class="vo-thumb">${vehicleIcon(v, 32, 'var(--text-dim)')}</div>
+      <div class="vo-info">
+        <div class="vo-name">${v.name}</div>
+        <div class="vo-model">${v.categoryLabel}</div>
+      </div>
+      <div class="vo-price">$${v.dailyRate.toLocaleString()} <span>/day</span></div>
+      <div class="vo-radio"></div>
+    </div>
+  `).join('');
+  updateSummary();
+}
+
+function selectVehicle(id) {
+  selectedVehicleId = id;
+  document.querySelectorAll('.vehicle-option').forEach(el => {
+    el.classList.toggle('selected', el.onclick.toString().includes(`'${id}'`));
+  });
+  updateSummary();
+  calcPrice();
+}
+
+function setMinDates() {
+  const today = new Date();
+  const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
+  const fmt = d => d.toISOString().split('T')[0];
+  document.getElementById('startDate').min = fmt(tomorrow);
+  document.getElementById('endDate').min = fmt(tomorrow);
+}
+
+function calcPrice() {
+  const s = document.getElementById('startDate').value;
+  const e = document.getElementById('endDate').value;
+  updateSummary(s, e);
+}
+
+function updateSummary(startVal, endVal) {
+  const v = FLEET.find(f => f.id === selectedVehicleId);
+
+  document.getElementById('summaryName').textContent = v ? v.name : 'Select a machine';
+  document.getElementById('summaryModel').textContent = v ? v.categoryLabel : '—';
+
+  if (!v) { clearSummaryNumbers(); return; }
+
+  const s = startVal || document.getElementById('startDate').value;
+  const e = endVal   || document.getElementById('endDate').value;
+
+  document.getElementById('sumRate').textContent = v ? `$${v.dailyRate.toLocaleString()}/day` : '—';
+
+  if (s && e) {
+    const days = Math.max(1, Math.round((new Date(e) - new Date(s)) / 86400000) + 1);
+    const subtotal = days * v.dailyRate;
+    const total = subtotal + DELIVERY_FEE;
+
+    document.getElementById('sumStart').textContent = formatDate(s);
+    document.getElementById('sumEnd').textContent = formatDate(e);
+    document.getElementById('sumDays').textContent = `${days} day${days > 1 ? 's' : ''}`;
+    document.getElementById('sumSubtotal').textContent = `$${subtotal.toLocaleString()}`;
+    document.getElementById('sumDelivery').textContent = `$${DELIVERY_FEE.toLocaleString()}`;
+    document.getElementById('sumTotal').textContent = `$${total.toLocaleString()}`;
+  } else {
+    document.getElementById('sumStart').textContent = s ? formatDate(s) : '—';
+    document.getElementById('sumEnd').textContent = e ? formatDate(e) : '—';
+    document.getElementById('sumDays').textContent = '—';
+    document.getElementById('sumSubtotal').textContent = '—';
+    document.getElementById('sumDelivery').textContent = `$${DELIVERY_FEE.toLocaleString()} (est.)`;
+    document.getElementById('sumTotal').textContent = '$—';
+  }
+}
+
+function clearSummaryNumbers() {
+  ['sumStart','sumEnd','sumDays','sumRate','sumSubtotal','sumDelivery'].forEach(id => {
+    document.getElementById(id).textContent = '—';
+  });
+  document.getElementById('sumTotal').textContent = '$—';
+  document.getElementById('sumDelivery').textContent = '—';
+}
+
+function formatDate(str) {
+  const [y,m,d] = str.split('-');
+  return new Date(y, m-1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+/* ── Step navigation ── */
+function goToStep(n) {
+  // Validate before advancing
+  if (n > 1 && !selectedVehicleId) {
+    showToast('Please select a machine first.', 'error'); return;
+  }
+  if (n > 2) {
+    const s = document.getElementById('startDate').value;
+    const e = document.getElementById('endDate').value;
+    const addr = document.getElementById('siteAddress').value.trim();
+    let ok = true;
+    if (!s) { showFieldError('startDateErr', 'Start date required'); ok = false; }
+    if (!e) { showFieldError('endDateErr', 'End date required'); ok = false; }
+    if (!addr) { showFieldError('addressErr', 'Delivery address required'); ok = false; }
+    if (s && e && new Date(e) < new Date(s)) {
+      showFieldError('endDateErr', 'End date must be after start date'); ok = false;
+    }
+    if (!ok) return;
+    clearFieldError('startDateErr'); clearFieldError('endDateErr'); clearFieldError('addressErr');
+  }
+
+  currentStep = n;
+  updateStepUI();
+}
+
+function updateStepUI() {
+  ['step1Panel','step2Panel','step3Panel'].forEach((id, i) => {
+    document.getElementById(id).style.display = currentStep === i+1 ? 'block' : 'none';
+  });
+  for (let i = 1; i <= 3; i++) {
+    const item = document.getElementById(`prog-${i}`);
+    item.classList.remove('active','done');
+    if (i < currentStep) item.classList.add('done');
+    else if (i === currentStep) item.classList.add('active');
+
+    // Checkmark for done steps
+    const dot = item.querySelector('.step-prog-dot');
+    if (i < currentStep) {
+      dot.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>`;
+    } else {
+      dot.textContent = i;
+    }
+  }
+}
+
+/* ── Form helpers ── */
+function showFieldError(id, msg) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = msg;
+  const inputId = id.replace('Err','');
+  const input = document.getElementById(inputId);
+  if (input) input.classList.add('error');
+}
+function clearFieldError(id) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = '';
+  const inputId = id.replace('Err','');
+  const input = document.getElementById(inputId);
+  if (input) input.classList.remove('error');
+}
+
+/* ── Submit booking ── */
+function submitBooking() {
+  const firstName = document.getElementById('firstName').value.trim();
+  const phone     = document.getElementById('phone').value.trim();
+  const email     = document.getElementById('email').value.trim();
+  let ok = true;
+
+  if (!firstName) { showFieldError('firstNameErr', 'Name required'); ok = false; }
+  else clearFieldError('firstNameErr');
+  if (!phone) { showFieldError('phoneErr', 'Phone required'); ok = false; }
+  else clearFieldError('phoneErr');
+  if (!email || !email.includes('@')) { showFieldError('emailErr', 'Valid email required'); ok = false; }
+  else clearFieldError('emailErr');
+  if (!ok) return;
+
+  const btn = document.getElementById('submitBtn');
+  btn.classList.add('btn-loading');
+  btn.textContent = 'Submitting…';
+
+  // Simulate API call
+  setTimeout(() => {
+    btn.classList.remove('btn-loading');
+    document.getElementById('step3Form').style.display = 'none';
+    document.getElementById('bookingSuccess').classList.add('active');
+    const refId = 'IH-' + Date.now().toString(36).toUpperCase();
+    document.getElementById('bookingId').textContent = `Reference #${refId}`;
+
+    // Mark step 3 as done
+    const item3 = document.getElementById('prog-3');
+    item3.classList.remove('active');
+    item3.classList.add('done');
+    const dot3 = item3.querySelector('.step-prog-dot');
+    dot3.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>`;
+
+    showToast('Booking request sent! Check your email.', 'success');
+  }, 1800);
+}
+
+function resetBooking() {
+  selectedVehicleId = null;
+  currentStep = 1;
+  document.getElementById('startDate').value = '';
+  document.getElementById('endDate').value = '';
+  document.getElementById('siteAddress').value = '';
+  document.getElementById('accessNotes').value = '';
+  document.getElementById('firstName').value = '';
+  document.getElementById('lastName').value = '';
+  document.getElementById('company').value = '';
+  document.getElementById('phone').value = '';
+  document.getElementById('email').value = '';
+  document.getElementById('bookingNotes').value = '';
+  document.getElementById('bookingSuccess').classList.remove('active');
+  document.getElementById('step3Form').style.display = 'flex';
+  const btn = document.getElementById('submitBtn');
+  btn.textContent = 'Submit Booking Request';
+  initBooking();
+}
+
+/* ─────────────────────────────────────────────
+   CONTACT FORM
+───────────────────────────────────────────── */
+function submitContact() {
+  const firstName = document.getElementById('cFirstName').value.trim();
+  const email     = document.getElementById('cEmail').value.trim();
+  const type      = document.getElementById('cInquiryType').value;
+  const msg       = document.getElementById('cMessage').value.trim();
+  let ok = true;
+
+  if (!firstName) { showFieldError('cFirstNameErr','Name required'); ok = false; }
+  else clearFieldError('cFirstNameErr');
+  if (!email || !email.includes('@')) { showFieldError('cEmailErr','Valid email required'); ok = false; }
+  else clearFieldError('cEmailErr');
+  if (!type) { showFieldError('cTypeErr','Please select a topic'); ok = false; }
+  else clearFieldError('cTypeErr');
+  if (!msg || msg.length < 20) { showFieldError('cMsgErr','Please add a brief message (min 20 characters)'); ok = false; }
+  else clearFieldError('cMsgErr');
+  if (!ok) return;
+
+  const form = document.getElementById('contactFormBody');
+  form.style.opacity = '.5';
+  setTimeout(() => {
+    form.style.opacity = '1';
+    document.getElementById('contactSuccess').style.display = 'block';
+    document.getElementById('cMessage').value = '';
+    showToast('Inquiry sent — we\'ll be in touch soon!', 'success');
+  }, 1200);
+}
+
+/* ─────────────────────────────────────────────
+   TOAST NOTIFICATION
+───────────────────────────────────────────── */
+function showToast(msg, type='success') {
+  const icons = {
+    success: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`,
+    error:   `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--error)"   stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`,
+    info:    `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--orange)"  stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+  };
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.innerHTML = (icons[type] || '') + msg;
+  document.getElementById('toastContainer').appendChild(toast);
+  requestAnimationFrame(() => { requestAnimationFrame(() => toast.classList.add('show')); });
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 400);
+  }, 3800);
+}
+
+/* ─────────────────────────────────────────────
+   INIT
+───────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+  renderFleet('all');
+  initBooking();
+});
+</script>
+</body>
+</html>
